@@ -156,7 +156,7 @@ function fourth(confirmAmount, itemName, newQuantity) {
 
 function update(itemName, newQuantity) {
   console.log("thanks for your business!");
-  const purchase = connection.query(
+  connection.query(
     "UPDATE products SET ? WHERE ?",
     [
       {
