@@ -11,22 +11,21 @@ const connection = mysql.createConnection({
   database: "shopkeep_DB"
 });
 
-const inventory = {
+let inventory = {
   medicine: [],
   weapon: [],
   clothing: [],
   material: []
 };
 
-connection.connect(function(error) {
-  if (error) {
-    return console.log(error);
-  }
-  console.log("connected as id " + connection.threadId);
-  afterConnection();
-});
+function refreshInv() {
+  inventory = {
+    medicine: [],
+    weapon: [],
+    clothing: [],
+    material: []
+  };
 
-function afterConnection() {
   connection.query("SELECT * FROM items", function(error, data) {
     if (error) {
       return console.log(error);
@@ -34,23 +33,42 @@ function afterConnection() {
     data.forEach(item => {
       inventory[item.type].push(item);
     });
-    inquirer
-      .prompt([
-        {
-          message: "welcome!",
-          type: "list",
-          choices: ["buy", "exit"],
-          name: "action"
-        }
-      ])
-      .then(function(enter) {
-        return first(enter);
-      })
-      .catch(function(error) {
-        console.log(error);
-        connection.end();
-      });
   });
+}
+
+connection.connect(function(error) {
+  if (error) {
+    return console.log(error);
+  }
+  afterInitial();
+});
+
+function afterInitial() {
+  refreshInv();
+  inquirer
+    .prompt([
+      {
+        message: "welcome!",
+        type: "list",
+        choices: ["buy", "exit"],
+        name: "action"
+      }
+    ])
+    .then(function(enter) {
+      return first(enter);
+    })
+    .catch(function(error) {
+      console.log(error);
+      connection.end();
+    });
+}
+
+function reEnter() {
+  first({ action: "enter" });
+}
+function goodbye() {
+  connection.end();
+  return console.log("come again soon!");
 }
 function first(enter) {
   if (enter.action != "exit") {
@@ -100,6 +118,11 @@ function second(category) {
     });
 }
 function third(heldItem) {
+  if (heldItem.quantity === 0) {
+    console.log("sorry, those are sold out!");
+    return reEnter();
+  }
+
   inquirer
     .prompt([
       {
@@ -114,13 +137,13 @@ function third(heldItem) {
         third(heldItem);
       } else if (orderAmount.buyCount === 0) {
         console.log("that's fine, take your time!");
-        first({ action: "enter" });
+        return reEnter();
       } else if (
         orderAmount.buyCount > 0 &&
         orderAmount.buyCount <= heldItem.quantity
       ) {
         const total = orderAmount.buyCount * heldItem.price;
-        const newQuantity = heldItem.quantity - order.buyCount;
+        const newQuantity = heldItem.quantity - orderAmount.buyCount;
         fourth(total, heldItem.name, newQuantity);
       } else {
         console.log("err... what?");
@@ -134,7 +157,6 @@ function third(heldItem) {
 }
 
 function fourth(confirmAmount, itemName, newQuantity) {
-  console.log(confirmAmount);
   inquirer
     .prompt([
       {
@@ -146,6 +168,8 @@ function fourth(confirmAmount, itemName, newQuantity) {
     .then(function(toUpdate) {
       if (toUpdate.isConfirm) {
         update(itemName, newQuantity);
+      } else {
+        return reEnter();
       }
     })
     .catch(function(error) {
@@ -156,26 +180,14 @@ function fourth(confirmAmount, itemName, newQuantity) {
 
 function update(itemName, newQuantity) {
   console.log("thanks for your business!");
-  connection.query(
-    "UPDATE products SET ? WHERE ?",
-    [
-      {
-        quantity: newQuantity
-      },
-      {
-        name: itemName
-      }
-    ],
-    function(err, res) {
-      if (err) throw err;
-      console.log(res.affectedRows + " products updated!\n");
-      // Call deleteProduct AFTER the UPDATE completes
-      deleteProduct();
+  connection.query("UPDATE items SET ? WHERE ?", [
+    {
+      quantity: newQuantity
+    },
+    {
+      name: itemName
     }
-  );
-}
-
-function goodbye() {
-  connection.end();
-  return console.log("come again soon!");
+  ]);
+  refreshInv();
+  return reEnter();
 }
