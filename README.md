@@ -9,13 +9,26 @@ This is a node application designed to emulate an online store. It keeps track o
 ## Requirements
 
 You'll need both the `inquirer` and `mysql` node packages, so make sure to install them.
+Next, run `shopkeep.sql` to create the database we'll be using.
 
 ```javascript
-$ npm i // the included package.json file will make this work
+$ npm i // the included package.json will help make this work
 ```
 
 ## How it Works
 
-Just like you'd expect, you'll be prompted to enter the store, select a category and an item that you'd like to purchase, and then say how many you want. Since we're not actually paying for anything here(oh no D:), the app won't keep track of how much money you have. Feel free to
+```javascript
+$ node customer.js
+```
 
-![image](./image)
+Just like you'd expect, you'll be prompted to enter the store, select a category and an item that you'd like to purchase, and then say how many you want. Since we're not actually paying for anything here(oh no D:), the app won't keep track of your money, so feel free to buy out everything in the store.
+
+Basically, it'll look like this:
+
+![screenshot](./b447674a926a21b6f894246fad3e5dd0.png)
+
+Or, watch a short run-through of the app [_**here**_](https://youtu.be/m3u3f-hR3SQ):
+
+## Known Bugs
+
+- None :D (but let me know if you see any!)

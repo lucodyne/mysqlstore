@@ -7,7 +7,7 @@ const connection = mysql.createConnection({
   port: 3306,
   user: "root",
 
-  password: "lamora22",
+  password: "***PASSWORD***",
   database: "shopkeep_DB"
 });
 
@@ -48,7 +48,7 @@ function afterInitial() {
   inquirer
     .prompt([
       {
-        message: "welcome!",
+        message: "welcome, take a look around!",
         type: "list",
         choices: ["buy", "exit"],
         name: "action"
@@ -146,7 +146,7 @@ function third(heldItem) {
         const newQuantity = heldItem.quantity - orderAmount.buyCount;
         fourth(total, heldItem.name, newQuantity);
       } else {
-        console.log("err... what?");
+        console.log("err... sorry, what?");
         third(heldItem);
       }
     })
